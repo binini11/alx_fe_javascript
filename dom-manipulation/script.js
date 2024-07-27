@@ -11,10 +11,11 @@ function saveQuotes() {
 
 
 function showRandomQuote() {
-  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const filteredQuotes = getFilteredQuotes();
+  const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
   const quoteDisplay = document.getElementById('quoteDisplay');
-  quoteDisplay.innerHTML = quotes[randomIndex].text;
-  sessionStorage.setItem('lastQuote', quotes[randomIndex].text);
+  quoteDisplay.innerHTML = filteredQuotes[randomIndex].text;
+  sessionStorage.setItem('lastQuote', filteredQuotes[randomIndex].text);
 }
 
 
@@ -24,6 +25,7 @@ function addQuote() {
   if (newQuoteText && newQuoteCategory) {
     quotes.push({ text: newQuoteText, category: newQuoteCategory });
     saveQuotes();
+    populateCategoryFilter();
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
     alert('Quote added successfully!');
@@ -62,9 +64,44 @@ function importFromJsonFile(event) {
     const importedQuotes = JSON.parse(event.target.result);
     quotes.push(...importedQuotes);
     saveQuotes();
+    populateCategoryFilter();
     alert('Quotes imported successfully!');
   };
   fileReader.readAsText(event.target.files[0]);
+}
+
+
+function populateCategoryFilter() {
+  const categoryFilter = document.getElementById('categoryFilter');
+  const categories = [...new Set(quotes.map(quote => quote.category))];
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+}
+
+
+function getFilteredQuotes() {
+  const selectedCategory = document.getElementById('categoryFilter').value;
+  if (selectedCategory === 'all') {
+    return quotes;
+  }
+  return quotes.filter(quote => quote.category === selectedCategory);
+}
+
+
+function filterQuotes() {
+  const filteredQuotes = getFilteredQuotes();
+  const quoteDisplay = document.getElementById('quoteDisplay');
+  if (filteredQuotes.length > 0) {
+    quoteDisplay.innerHTML = filteredQuotes[0].text;
+  } else {
+    quoteDisplay.innerHTML = 'No quotes available for this category.';
+  }
+  localStorage.setItem('selectedCategory', document.getElementById('categoryFilter').value);
 }
 
 
@@ -77,9 +114,17 @@ document.getElementById('exportQuotes').addEventListener('click', exportQuotes);
 createAddQuoteForm();
 
 
+populateCategoryFilter();
+
+
 window.onload = function() {
   const lastQuote = sessionStorage.getItem('lastQuote');
   if (lastQuote) {
     document.getElementById('quoteDisplay').innerHTML = lastQuote;
+  }
+  const selectedCategory = localStorage.getItem('selectedCategory');
+  if (selectedCategory) {
+    document.getElementById('categoryFilter').value = selectedCategory;
+    filterQuotes();
   }
 };
