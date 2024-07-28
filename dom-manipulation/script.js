@@ -1,12 +1,13 @@
-
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "The only way to do great work is to love what you do. - Steve Jobs", category: "Motivation" },
   { text: "In the middle of difficulty lies opportunity. - Albert Einstein", category: "Inspiration" }
 ];
 
+
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
+
 
 function showRandomQuote() {
   const filteredQuotes = getFilteredQuotes();
@@ -137,7 +138,7 @@ async function postQuoteToServer(quote) {
 }
 
 
-async function syncWithServer() {
+async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   quotes = [...new Set([...serverQuotes, ...quotes])];
   saveQuotes();
@@ -177,8 +178,8 @@ window.onload = function() {
     document.getElementById('categoryFilter').value = selectedCategory;
     filterQuotes();
   }
-  syncWithServer();
+  syncQuotes();
 };
 
 
-setInterval(syncWithServer, 60000);
+setInterval(syncQuotes, 60000);
