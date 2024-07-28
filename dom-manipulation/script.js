@@ -1,13 +1,12 @@
+
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "The only way to do great work is to love what you do. - Steve Jobs", category: "Motivation" },
   { text: "In the middle of difficulty lies opportunity. - Albert Einstein", category: "Inspiration" }
 ];
 
-
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
-
 
 function showRandomQuote() {
   const filteredQuotes = getFilteredQuotes();
@@ -22,13 +21,14 @@ function addQuote() {
   const newQuoteText = document.getElementById('newQuoteText').value;
   const newQuoteCategory = document.getElementById('newQuoteCategory').value;
   if (newQuoteText && newQuoteCategory) {
-    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+    const newQuote = { text: newQuoteText, category: newQuoteCategory };
+    quotes.push(newQuote);
     saveQuotes();
     populateCategories();
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
     alert('Quote added successfully!');
-    syncWithServer();
+    postQuoteToServer(newQuote);
   } else {
     alert('Please enter both quote text and category.');
   }
@@ -117,6 +117,22 @@ async function fetchQuotesFromServer() {
   } catch (error) {
     console.error('Error fetching quotes from server:', error);
     return [];
+  }
+}
+
+
+async function postQuoteToServer(quote) {
+  try {
+    await fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(quote)
+    });
+    showNotification('Quote posted to server.');
+  } catch (error) {
+    console.error('Error posting quote to server:', error);
   }
 }
 
