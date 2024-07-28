@@ -1,4 +1,3 @@
-
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "The only way to do great work is to love what you do. - Steve Jobs", category: "Motivation" },
   { text: "In the middle of difficulty lies opportunity. - Albert Einstein", category: "Inspiration" }
@@ -29,6 +28,7 @@ function addQuote() {
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
     alert('Quote added successfully!');
+    syncWithServer();
   } else {
     alert('Please enter both quote text and category.');
   }
@@ -105,6 +105,33 @@ function filterQuotes() {
 }
 
 
+async function syncWithServer() {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+    const serverQuotes = await response.json();
+    const serverQuotesFormatted = serverQuotes.map(post => ({
+      text: post.title,
+      category: 'Server'
+    }));
+    quotes = [...new Set([...serverQuotesFormatted, ...quotes])];
+    saveQuotes();
+    populateCategories();
+    showNotification('Quotes synced with server.');
+  } catch (error) {
+    console.error('Error syncing with server:', error);
+  }
+}
+
+
+function showNotification(message) {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  setTimeout(() => {
+    notification.textContent = '';
+  }, 3000);
+}
+
+
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 
@@ -127,4 +154,7 @@ window.onload = function() {
     document.getElementById('categoryFilter').value = selectedCategory;
     filterQuotes();
   }
+  syncWithServer();
 };
+
+setInterval(syncWithServer, 60000); 
