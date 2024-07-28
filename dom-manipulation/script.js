@@ -105,7 +105,7 @@ function filterQuotes() {
 }
 
 
-async function syncWithServer() {
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch('https://jsonplaceholder.typicode.com/posts');
     const serverQuotes = await response.json();
@@ -113,13 +113,20 @@ async function syncWithServer() {
       text: post.title,
       category: 'Server'
     }));
-    quotes = [...new Set([...serverQuotesFormatted, ...quotes])];
-    saveQuotes();
-    populateCategories();
-    showNotification('Quotes synced with server.');
+    return serverQuotesFormatted;
   } catch (error) {
-    console.error('Error syncing with server:', error);
+    console.error('Error fetching quotes from server:', error);
+    return [];
   }
+}
+
+
+async function syncWithServer() {
+  const serverQuotes = await fetchQuotesFromServer();
+  quotes = [...new Set([...serverQuotes, ...quotes])];
+  saveQuotes();
+  populateCategories();
+  showNotification('Quotes synced with server.');
 }
 
 
@@ -157,4 +164,5 @@ window.onload = function() {
   syncWithServer();
 };
 
-setInterval(syncWithServer, 60000); 
+
+setInterval(syncWithServer, 60000);
