@@ -143,7 +143,7 @@ async function syncQuotes() {
   quotes = [...new Set([...serverQuotes, ...quotes])];
   saveQuotes();
   populateCategories();
-  showNotification('Quotes synced with server.');
+  showNotification('Quotes synced with server!');
 }
 
 
